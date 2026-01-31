@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meine Spiele - Archiv</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tahoma:wght@400;700&family=MS+Sans+Serif&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --xp-blue: #0054E3;
+            --xp-light-blue: #3C8EF3;
+            --xp-green: #2FA52F;
+            --xp-window-bg: #ECE9D8;
+            --xp-border-light: #FFFFFF;
+            --xp-border-dark: #ACA899;
+            --xp-titlebar: linear-gradient(to right, #0054E3, #3C8EF3);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            font-family: 'Tahoma', sans-serif;
+            background: #5A7EDC;
+            background-image: 
+                radial-gradient(ellipse at top left, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(0,0,0,0.1) 0%, transparent 50%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Floating clouds background effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05) 0%, transparent 3%),
+                radial-gradient(circle at 60% 70%, rgba(255,255,255,0.05) 0%, transparent 3%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 3%);
+            animation: cloudFloat 60s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes cloudFloat {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+
+
+        .window {
+            background: var(--xp-window-bg);
+            border: none;
+            box-shadow: none;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            z-index: 10;
+            animation: windowOpen 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform-origin: center center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes windowOpen {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.02);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .titlebar {
+            background: var(--xp-titlebar);
+            padding: 3px 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: move;
+            user-select: none;
+        }
+
+        .titlebar-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .titlebar-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        .titlebar-text {
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+
+        .window-buttons {
+            display: flex;
+            gap: 2px;
+        }
+
+        .window-btn {
+            width: 21px;
+            height: 21px;
+            border: 1px solid;
+            border-color: var(--xp-border-light) var(--xp-border-dark) var(--xp-border-dark) var(--xp-border-light);
+            background: linear-gradient(to bottom, #F3F1E8, #D8D2C4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.1s;
+        }
+
+        .window-btn:hover {
+            background: linear-gradient(to bottom, #FFF, #E8E4D8);
+        }
+
+        .window-btn:active {
+            border-color: var(--xp-border-dark) var(--xp-border-light) var(--xp-border-light) var(--xp-border-dark);
+            background: linear-gradient(to bottom, #D8D2C4, #F3F1E8);
+        }
+
+        .close-btn {
+            color: #000;
+        }
+
+        .menubar {
+            background: linear-gradient(to bottom, #F7F6F1, #E5E1D7);
+            border-bottom: 1px solid var(--xp-border-dark);
+            padding: 4px 6px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .menu-item {
+            padding: 3px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: background 0.1s;
+        }
+
+        .menu-item:hover {
+            background: rgba(0, 84, 227, 0.1);
+        }
+
+        .content {
+            padding: 0;
+            flex: 1;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 0;
+            overflow: hidden;
+        }
+
+        .devlog-panel {
+            background: linear-gradient(to bottom, #F7F6F1, #ECE9D8);
+            border-right: 2px solid var(--xp-border-dark);
+            padding: 20px;
+            overflow-y: auto;
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            0% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .games-panel {
+            background: var(--xp-window-bg);
+            padding: 24px;
+            overflow-y: auto;
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        @keyframes slideInRight {
+            0% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .panel-header {
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--xp-blue);
+        }
+
+        .panel-header h2 {
+            font-size: 20px;
+            color: var(--xp-blue);
+            margin-bottom: 4px;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.8);
+        }
+
+        .panel-header p {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .devlog-entry {
+            background: white;
+            border: 2px solid;
+            border-color: var(--xp-border-light) var(--xp-border-dark) var(--xp-border-dark) var(--xp-border-light);
+            padding: 16px;
+            margin-bottom: 16px;
+            animation: entryFadeIn 0.5s ease-out backwards;
+        }
+
+        @keyframes entryFadeIn {
+            0% {
+                transform: translateX(-30px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .devlog-entry:nth-child(2) { animation-delay: 0.1s; }
+        .devlog-entry:nth-child(3) { animation-delay: 0.2s; }
+        .devlog-entry:nth-child(4) { animation-delay: 0.3s; }
+        .devlog-entry:nth-child(5) { animation-delay: 0.4s; }
+
+        .devlog-date {
+            color: var(--xp-blue);
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .devlog-date::before {
+            content: '📅';
+        }
+
+        .devlog-title {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #000;
+        }
+
+        .devlog-text {
+            font-size: 12px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .stats-box {
+            background: linear-gradient(to bottom, #FFFFFF, #F5F3ED);
+            border: 2px solid;
+            border-color: var(--xp-border-light) var(--xp-border-dark) var(--xp-border-dark) var(--xp-border-light);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px dotted #ccc;
+            font-size: 12px;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: var(--xp-blue);
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .game-card {
+            background: linear-gradient(to bottom, #FFFFFF, #F5F3ED);
+            border: 2px solid;
+            border-color: var(--xp-border-light) var(--xp-border-dark) var(--xp-border-dark) var(--xp-border-light);
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            position: relative;
+            overflow: hidden;
+            animation: cardFadeIn 0.5s ease-out backwards;
+        }
+
+        @keyframes cardFadeIn {
+            0% {
+                transform: translateY(20px) rotateX(20deg);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0) rotateX(0);
+                opacity: 1;
+            }
+        }
+
+        .game-card:nth-child(1) { animation-delay: 0.1s; }
+        .game-card:nth-child(2) { animation-delay: 0.2s; }
+        .game-card:nth-child(3) { animation-delay: 0.3s; }
+        .game-card:nth-child(4) { animation-delay: 0.4s; }
+        .game-card:nth-child(5) { animation-delay: 0.5s; }
+        .game-card:nth-child(6) { animation-delay: 0.6s; }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            transition: left 0.5s;
+        }
+
+        .game-card:hover::before {
+            left: 100%;
+        }
+
+        .game-card:hover {
+            border-color: var(--xp-light-blue) var(--xp-blue) var(--xp-blue) var(--xp-light-blue);
+            box-shadow: 0 4px 12px rgba(0, 84, 227, 0.3);
+            transform: translateY(-4px) scale(1.02);
+        }
+
+        .game-card:active {
+            transform: translateY(-2px) scale(0.98);
+            box-shadow: 0 2px 6px rgba(0, 84, 227, 0.2);
+        }
+
+        .game-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.2));
+        }
+
+        .game-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+
+        .game-desc {
+            font-size: 11px;
+            color: #666;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .statusbar {
+            background: linear-gradient(to bottom, #E8E4D8, #D8D2C4);
+            border-top: 1px solid var(--xp-border-light);
+            padding: 3px 6px;
+            display: flex;
+            gap: 8px;
+            font-size: 11px;
+        }
+
+        .status-item {
+            padding: 2px 8px;
+            border: 1px solid;
+            border-color: #848278 #FFFFFF #FFFFFF #848278;
+            background: #ECE9D8;
+            flex: 1;
+        }
+
+        /* Start button easter egg */
+        .start-btn {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(to bottom, #3AC93A, #2FA52F);
+            border: 2px outset #2FA52F;
+            padding: 4px 12px 4px 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transition: all 0.1s;
+        }
+
+        .start-btn:hover {
+            background: linear-gradient(to bottom, #50D950, #3AC93A);
+        }
+
+        .start-btn:active {
+            border-style: inset;
+            padding: 5px 11px 3px 9px;
+        }
+
+        .start-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Add button */
+        .add-game-btn {
+            background: linear-gradient(to bottom, #FFFFFF, #F5F3ED);
+            border: 2px solid;
+            border-color: var(--xp-border-light) var(--xp-border-dark) var(--xp-border-dark) var(--xp-border-light);
+            padding: 12px 24px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 0 auto;
+            display: block;
+            transition: all 0.2s;
+        }
+
+        .add-game-btn:hover {
+            background: linear-gradient(to bottom, #FFF, #FAFAF8);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .add-game-btn:active {
+            border-color: var(--xp-border-dark) var(--xp-border-light) var(--xp-border-light) var(--xp-border-dark);
+            transform: translateY(1px);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .devlog-panel {
+                border-right: none;
+                border-bottom: 2px solid var(--xp-border-dark);
+                max-height: 300px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .devlog-panel {
+                padding: 16px;
+            }
+            
+            .games-panel {
+                padding: 16px;
+            }
+        }
+
+        /* Cursor effect */
+        .game-card:hover {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="white" stroke="black" d="M5 3l14 9-6 0-2 6z"/></svg>') 4 4, pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Window -->
+    <div class="window">
+        <!-- Titlebar -->
+        <div class="titlebar">
+            <div class="titlebar-left">
+                <svg class="titlebar-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="16" height="16" fill="#FFD700"/>
+                    <rect x="3" y="3" width="10" height="8" fill="#FFF"/>
+                    <circle cx="8" cy="7" r="2" fill="#0054E3"/>
+                </svg>
+                <span class="titlebar-text">Game Development Dashboard</span>
+            </div>
+            <div class="window-buttons">
+                <div class="window-btn" onclick="playSound('minimize')" title="Minimieren">_</div>
+                <div class="window-btn" onclick="playSound('maximize')" title="Maximieren">□</div>
+                <div class="window-btn close-btn" onclick="playSound('close')" title="Schließen">×</div>
+            </div>
+        </div>
+
+        <!-- Menubar -->
+        <div class="menubar">
+            <div class="menu-item" onclick="playSound('menu')">Datei</div>
+            <div class="menu-item" onclick="playSound('menu')">Bearbeiten</div>
+            <div class="menu-item" onclick="playSound('menu')">Ansicht</div>
+            <div class="menu-item" onclick="playSound('menu')">Extras</div>
+            <div class="menu-item" onclick="playSound('menu')">Hilfe</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Left Panel: DevLog -->
+            <div class="devlog-panel">
+                <div class="panel-header">
+                    <h2>📝 Development Log</h2>
+                    <p>Aktuelle Updates und Fortschritte</p>
+                </div>
+
+                <div class="stats-box">
+                    <div class="stat-item">
+                        <span class="stat-label">Veröffentlichte Spiele:</span>
+                        <span class="stat-value">6</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">In Entwicklung:</span>
+                        <span class="stat-value">2</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Gesamte Downloads:</span>
+                        <span class="stat-value">12.4K</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Status:</span>
+                        <span class="stat-value">🟢 Aktiv</span>
+                    </div>
+                </div>
+
+                <div class="devlog-entry">
+                    <div class="devlog-date">31. Januar 2026</div>
+                    <div class="devlog-title">🎉 Neue Dashboard-Version veröffentlicht!</div>
+                    <div class="devlog-text">
+                        Das Dashboard wurde komplett überarbeitet. Neue Features: Verbesserte Performance, 
+                        responsive Design und eine moderne Benutzeroberfläche im XP-Stil.
+                    </div>
+                </div>
+
+                <div class="devlog-entry">
+                    <div class="devlog-date">28. Januar 2026</div>
+                    <div class="devlog-title">🚀 Spiel Sechs ist live!</div>
+                    <div class="devlog-text">
+                        Nach 3 Monaten Entwicklung ist unser neuestes Projekt endlich verfügbar. 
+                        Viel Spaß beim Spielen und teilt eure Highscores!
+                    </div>
+                </div>
+
+                <div class="devlog-entry">
+                    <div class="devlog-date">15. Januar 2026</div>
+                    <div class="devlog-title">🔧 Update für Spiel Vier</div>
+                    <div class="devlog-text">
+                        Bugfixes und Performance-Verbesserungen. Die Ladezeiten wurden um 40% reduziert!
+                    </div>
+                </div>
+
+                <div class="devlog-entry">
+                    <div class="devlog-date">05. Januar 2026</div>
+                    <div class="devlog-title">🎮 Jahresrückblick 2025</div>
+                    <div class="devlog-text">
+                        Danke für ein tolles Jahr! Über 10.000 Downloads und viele positive Reviews. 
+                        2026 wird noch besser!
+                    </div>
+                </div>
+
+                <div class="devlog-entry">
+                    <div class="devlog-date">20. Dezember 2025</div>
+                    <div class="devlog-title">❄️ Winter-Event gestartet</div>
+                    <div class="devlog-text">
+                        Spezielle Winter-Inhalte sind jetzt in allen Spielen verfügbar. Limitierte Zeit!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Games -->
+            <div class="games-panel">
+                <div class="panel-header">
+                    <h2>🎮 Meine Spiele</h2>
+                    <p>Klicke auf ein Spiel um es zu spielen</p>
+                </div>
+
+                <div class="games-grid" id="gamesGrid">
+                    <!-- Beispiel-Spiele - Diese können angepasst werden -->
+                    <a href="#" class="game-card" onclick="playSound('open'); return true;">
+                        <div class="game-icon">🎯</div>
+                        <div class="game-title">Spiel Eins</div>
+                        <div class="game-desc">Ein spannendes Abenteuer wartet auf dich!</div>
+                    </a>
+
+                    <a href="#" class="game-card" onclick="playSound('open'); return true;">
+                        <div class="game-icon">🏆</div>
+                        <div class="game-title">Spiel Zwei</div>
+                        <div class="game-desc">Zeige deine Fähigkeiten in diesem Klassiker</div>
+                    </a>
+
+                    <a href="#" class="game-card" onclick="playSound('open'); return true;">
+                        <div class="game-icon">🚀</div>
+                        <div class="game-title">Spiel Drei</div>
+                        <div class="game-desc">Erkunde neue Welten im Weltall</div>
+                    </a>
+
+                    <a href="#" class="game-card" onclick="playSound('open'); return true;">
+                        <div class="game-icon">⚔️</div>
+                        <div class="game-title">Spiel Vier</div>
+                        <div class="game-desc">Epische Kämpfe und Strategien</div>
+                    </a>
+
+                    <a href="#" class="game-card" onclick="playSound('open'); return true;">
+                        <div class="game-icon">🎨</div>
+                        <div class="game-title">Spiel Fünf</div>
+                        <div class="game-desc">Kreativ sein und Spaß haben</div>
+                    </a>
+
+                    <a href="#" class="game-card" onclick="playSound('open'); return true;">
+                        <div class="game-icon">🎲</div>
+                        <div class="game-title">Spiel Sechs</div>
+                        <div class="game-desc">Würfle dein Glück!</div>
+                    </a>
+                </div>
+
+                <button class="add-game-btn" onclick="playSound('click'); alert('Hier kannst du später neue Spiele hinzufügen!');">
+                    + Neues Spiel hinzufügen
+                </button>
+            </div>
+        </div>
+
+        <!-- Statusbar -->
+        <div class="statusbar">
+            <div class="status-item">6 Spiele verfügbar</div>
+            <div class="status-item">5 DevLog Einträge</div>
+            <div class="status-item" id="currentTime"></div>
+        </div>
+    </div>
+
+    <!-- Start Button -->
+    <div class="start-btn" onclick="playSound('start')">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+            <rect width="20" height="20" fill="url(#startGrad)"/>
+            <defs>
+                <linearGradient id="startGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+        </svg>
+        Start
+    </div>
+
+    <script>
+        // Sound Effects using Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            switch(type) {
+                case 'click':
+                    oscillator.frequency.value = 800;
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+                case 'open':
+                    oscillator.frequency.value = 600;
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + 0.15);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.15);
+                    break;
+                case 'minimize':
+                    oscillator.frequency.value = 1000;
+                    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+                case 'maximize':
+                    oscillator.frequency.value = 400;
+                    oscillator.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+                case 'close':
+                    oscillator.frequency.value = 800;
+                    oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.3);
+                    gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                    break;
+                case 'menu':
+                    oscillator.frequency.value = 700;
+                    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.08);
+                    break;
+                case 'start':
+                    oscillator.frequency.value = 500;
+                    oscillator.frequency.exponentialRampToValueAtTime(900, audioContext.currentTime + 0.1);
+                    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.25);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.25);
+                    break;
+            }
+        }
+
+        // Update time in statusbar
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+        
+        updateTime();
+        setInterval(updateTime, 60000);
+
+        // Welcome sound on load
+        window.addEventListener('load', () => {
+            setTimeout(() => playSound('start'), 300);
+        });
+
+        // Hover sounds on game cards
+        document.querySelectorAll('.game-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                const hoverOsc = audioContext.createOscillator();
+                const hoverGain = audioContext.createGain();
+                hoverOsc.connect(hoverGain);
+                hoverGain.connect(audioContext.destination);
+                hoverOsc.frequency.value = 900;
+                hoverGain.gain.setValueAtTime(0.08, audioContext.currentTime);
+                hoverGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+                hoverOsc.start(audioContext.currentTime);
+                hoverOsc.stop(audioContext.currentTime + 0.05);
+            });
+        });
+    </script>
+</body>
+</html>
