@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevLog - Entwicklungsjournal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>Loopfire - Playtest Feedback</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #f5f1e8;
-            --bg-secondary: #fff8f0;
-            --bg-card: #ffffff;
-            --text-primary: #2d2d2d;
-            --text-secondary: #6b6b6b;
-            --accent-primary: #e67e22;
-            --accent-secondary: #d35400;
-            --border: #e8dcc8;
-            --shadow: rgba(230, 126, 34, 0.15);
-            --shadow-hover: rgba(230, 126, 34, 0.25);
+            --primary-blue: #4A90E2;
+            --primary-cyan: #50C9CE;
+            --accent-pink: #FF6B9D;
+            --accent-orange: #FFB84D;
+            --light-bg: #F5F7FA;
+            --card-bg: #FFFFFF;
+            --text-dark: #2C3E50;
+            --text-medium: #5A6C7D;
+            --border-light: #E1E8ED;
+            --success-green: #4ECDC4;
+            --warning-yellow: #FFE66D;
         }
 
         * {
@@ -26,916 +28,288 @@
         }
 
         body {
-            font-family: 'Ubuntu', sans-serif;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-            color: var(--text-primary);
-            line-height: 1.6;
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #F0F4F8 0%, #E8EEF5 100%);
+            color: var(--text-dark);
             min-height: 100vh;
+            padding: 2rem;
+            position: relative;
             overflow-x: hidden;
         }
 
-        /* Header */
-        header {
-            background: var(--bg-card);
-            border-bottom: 2px solid var(--border);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            position: sticky;
+        /* Animated background shapes */
+        body::before {
+            content: '';
+            position: fixed;
             top: 0;
-            z-index: 100;
-            animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(74, 144, 226, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(80, 201, 206, 0.08) 0%, transparent 50%);
+            animation: floatShapes 15s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Geometric shapes floating in background */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -10%;
+            right: -5%;
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.1), rgba(255, 184, 77, 0.1));
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+            animation: rotate3d 20s linear infinite, float 8s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes floatShapes {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(3%, -4%) scale(1.05); }
+            66% { transform: translate(-3%, 4%) scale(0.95); }
+        }
+
+        @keyframes rotate3d {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-30px); }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: slideDown 1s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        /* Decorative gaming elements around header */
+        .header::before,
+        .header::after {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 3px solid var(--primary-cyan);
+            opacity: 0.3;
+        }
+
+        .header::before {
+            top: -20px;
+            left: 50%;
+            transform: translateX(-150px) rotate(45deg);
+            clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 50%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .header::after {
+            top: -20px;
+            left: 50%;
+            transform: translateX(90px) rotate(-45deg);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            animation: pulse 3s ease-in-out infinite 1.5s;
         }
 
         @keyframes slideDown {
             from {
-                transform: translateY(-100%);
                 opacity: 0;
+                transform: translateY(-50px) scale(0.9);
             }
             to {
-                transform: translateY(0);
                 opacity: 1;
+                transform: translateY(0) scale(1);
             }
         }
 
-        nav {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1.5rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        @keyframes pulse {
+            0%, 100% { 
+                transform: translateX(-150px) rotate(45deg) scale(1);
+                opacity: 0.3;
+            }
+            50% { 
+                transform: translateX(-150px) rotate(45deg) scale(1.2);
+                opacity: 0.6;
+            }
         }
 
         .logo {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--accent-primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            transition: transform 0.3s ease;
-        }
-
-        .logo:hover {
-            transform: scale(1.05);
-        }
-
-        .logo-image {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px var(--shadow);
-            object-fit: cover;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 1rem;
-            list-style: none;
-        }
-
-        .nav-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            padding: 0.7rem 1.5rem;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .nav-link:hover {
-            background: var(--bg-secondary);
-            color: var(--accent-primary);
-        }
-
-        .nav-link.active {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            color: white;
-            box-shadow: 0 4px 15px var(--shadow);
-        }
-
-        /* Main Content */
-        main {
-            max-width: 100%;
-            margin: 0;
-            padding: 0;
-            min-height: calc(100vh - 90px);
-        }
-
-        .sidebar {
-            width: 25%;
-            padding: 2rem;
-            overflow-y: auto;
-            border-right: 2px solid var(--border);
-            background: var(--bg-secondary);
-        }
-
-        .content-area {
-            width: 75%;
-            padding: 3rem;
-            overflow-y: auto;
-        }
-
-        .hero {
-            text-align: center;
-            margin-bottom: 2rem;
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
-        }
-
-        .hero h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-cyan), var(--accent-pink));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-        }
-
-        .hero p {
-            font-size: 1rem;
-            color: var(--text-secondary);
-            font-weight: 300;
-        }
-
-        /* Sidebar Entries */
-        .entries-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .entry {
-            background: var(--bg-card);
-            border-radius: 15px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            border: 2px solid var(--border);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            cursor: pointer;
-            position: relative;
-        }
-
-        .entry:nth-child(1) { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards; }
-        .entry:nth-child(2) { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards; }
-        .entry:nth-child(3) { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards; }
-        .entry:nth-child(4) { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s backwards; }
-        .entry:nth-child(5) { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s backwards; }
-
-        .entry:hover {
-            transform: translateX(8px);
-            box-shadow: 0 8px 25px var(--shadow-hover);
-            border-color: var(--accent-primary);
-        }
-
-        .entry.active {
-            border-color: var(--accent-primary);
-            background: linear-gradient(135deg, rgba(230, 126, 34, 0.05), rgba(211, 84, 0, 0.05));
-        }
-
-        .entry-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-            gap: 0.5rem;
-        }
-
-        .entry-date {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            color: white;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            white-space: nowrap;
-            box-shadow: 0 2px 10px var(--shadow);
-        }
-
-        .entry-tags {
-            display: flex;
-            gap: 0.3rem;
-            flex-wrap: wrap;
-        }
-
-        .tag {
-            background: var(--bg-secondary);
-            color: var(--text-secondary);
-            padding: 0.3rem 0.7rem;
-            border-radius: 15px;
-            font-size: 0.7rem;
-            border: 1px solid var(--border);
-            transition: all 0.3s ease;
-        }
-
-        .entry:hover .tag {
-            background: var(--accent-primary);
-            color: white;
-            border-color: var(--accent-primary);
-        }
-
-        .entry h2 {
-            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
             margin-bottom: 0.5rem;
-            color: var(--text-primary);
-            font-weight: 700;
-        }
-
-        .entry-content {
-            display: none;
-        }
-
-        .entry-meta {
-            display: none;
-        }
-
-        .entry-preview {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            line-height: 1.5;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        /* Detail View */
-        .detail-view {
-            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .detail-header {
-            margin-bottom: 2rem;
-        }
-
-        .detail-title {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: var(--text-primary);
-        }
-
-        .detail-meta-row {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .detail-date {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            color: white;
-            padding: 0.6rem 1.5rem;
-            border-radius: 25px;
-            font-size: 1rem;
-            font-weight: 500;
-            box-shadow: 0 4px 15px var(--shadow);
-        }
-
-        .detail-tags {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .detail-tag {
-            background: var(--bg-secondary);
-            color: var(--text-secondary);
-            padding: 0.6rem 1.2rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            border: 1px solid var(--border);
-        }
-
-        .detail-content {
-            color: var(--text-primary);
-            font-size: 1.2rem;
-            line-height: 1.9;
-            margin-bottom: 2rem;
-        }
-
-        .detail-content p {
-            margin-bottom: 1.5rem;
-        }
-
-        .detail-meta-footer {
-            display: flex;
-            gap: 2rem;
-            color: var(--text-secondary);
-            font-size: 1rem;
-            padding-top: 2rem;
-            border-top: 2px solid var(--border);
-        }
-
-        .detail-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 0.7rem;
-        }
-
-        .detail-meta-icon {
-            font-size: 1.5rem;
-        }
-
-        .placeholder-message {
-            text-align: center;
-            color: var(--text-secondary);
-            padding: 4rem 2rem;
-        }
-
-        .placeholder-message h2 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: var(--text-primary);
-        }
-
-        /* Tab Content */
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        #devlogContent.active {
-            display: flex;
-        }
-
-        /* Downloads Page - Windows 8 Tiles */
-        #downloadsContent {
-            width: 100%;
-            padding: 3rem;
-        }
-
-        .downloads-hero {
-            text-align: center;
-            margin-bottom: 2rem;
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
-        }
-
-        .downloads-hero h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .downloads-hero p {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-        }
-
-        /* Download Sub-Navigation */
-        .download-sub-nav {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 3rem;
-            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;
-        }
-
-        .download-sub-link {
-            background: var(--bg-card);
-            color: var(--text-secondary);
-            padding: 0.8rem 2rem;
-            border-radius: 12px;
-            border: 2px solid var(--border);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .download-sub-link:hover {
-            background: var(--bg-secondary);
-            color: var(--accent-primary);
-            border-color: var(--accent-primary);
-        }
-
-        .download-sub-link.active {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            color: white;
-            border-color: var(--accent-primary);
-            box-shadow: 0 4px 15px var(--shadow);
-        }
-
-        /* Download Sub-Content */
-        .download-sub-content {
-            display: none;
-        }
-
-        .download-sub-content.active {
-            display: block;
-        }
-
-        .tiles-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1.5rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .tile {
-            aspect-ratio: 1;
-            background: var(--bg-card);
-            border-radius: 0;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            text-decoration: none;
-            color: white;
             position: relative;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+            display: inline-block;
+            animation: logoGlow 3s ease-in-out infinite;
+            filter: drop-shadow(0 5px 15px rgba(74, 144, 226, 0.3));
         }
 
-        .tile:nth-child(1) { animation-delay: 0.1s; background: linear-gradient(135deg, #e74c3c, #c0392b); }
-        .tile:nth-child(2) { animation-delay: 0.15s; background: linear-gradient(135deg, #3498db, #2980b9); }
-        .tile:nth-child(3) { animation-delay: 0.2s; background: linear-gradient(135deg, #2ecc71, #27ae60); }
-        .tile:nth-child(4) { animation-delay: 0.25s; background: linear-gradient(135deg, #f39c12, #d68910); }
-        .tile:nth-child(5) { animation-delay: 0.3s; background: linear-gradient(135deg, #9b59b6, #8e44ad); }
-        .tile:nth-child(6) { animation-delay: 0.35s; background: linear-gradient(135deg, #1abc9c, #16a085); }
-        .tile:nth-child(7) { animation-delay: 0.4s; background: linear-gradient(135deg, #e67e22, #d35400); }
-        .tile:nth-child(8) { animation-delay: 0.45s; background: linear-gradient(135deg, #34495e, #2c3e50); }
-
-        .tile:hover {
-            transform: scale(1.05);
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
-            z-index: 10;
-        }
-
-        .tile::before {
+        /* Animated underline */
+        .logo::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.1);
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            bottom: -10px;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-cyan), var(--accent-pink));
+            transform: translateX(-50%);
+            animation: expandLine 2s ease-in-out 0.5s forwards;
+            border-radius: 2px;
         }
 
-        .tile:hover::before {
-            opacity: 1;
+        @keyframes logoGlow {
+            0%, 100% { filter: drop-shadow(0 5px 15px rgba(74, 144, 226, 0.3)); }
+            50% { filter: drop-shadow(0 8px 25px rgba(80, 201, 206, 0.5)); }
         }
 
-        .tile-icon {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
+        @keyframes expandLine {
+            to { width: 120%; }
         }
 
-        .tile-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-        }
-
-        .tile-title {
+        .subtitle {
             font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 0.3rem;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            color: var(--text-medium);
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            position: relative;
+            display: inline-block;
+            padding: 0.5rem 2rem;
         }
 
-        .tile-subtitle {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            font-weight: 300;
-        }
-
-        .tile-badge {
+        /* Gaming HUD style brackets */
+        .subtitle::before,
+        .subtitle::after {
+            content: '';
             position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: rgba(255, 255, 255, 0.3);
-            padding: 0.3rem 0.7rem;
-            border-radius: 15px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            backdrop-filter: blur(10px);
-        }
-
-        /* Wide Tile */
-        .tile.wide {
-            grid-column: span 2;
-            aspect-ratio: 2/1;
-        }
-
-        /* YouTube Page */
-        #youtubeContent {
-            width: 100%;
-            padding: 3rem;
-        }
-
-        .youtube-hero {
-            text-align: center;
-            margin-bottom: 3rem;
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
-        }
-
-        .youtube-hero h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .youtube-hero p {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-        }
-
-        .videos-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .video-card {
-            background: var(--bg-card);
-            border-radius: 15px;
-            border: 3px solid var(--border);
-            overflow: hidden;
-            text-decoration: none;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-            position: relative;
-        }
-
-        .video-card:nth-child(1) { animation-delay: 0.1s; }
-        .video-card:nth-child(2) { animation-delay: 0.15s; }
-        .video-card:nth-child(3) { animation-delay: 0.2s; }
-        .video-card:nth-child(4) { animation-delay: 0.25s; }
-        .video-card:nth-child(5) { animation-delay: 0.3s; }
-        .video-card:nth-child(6) { animation-delay: 0.35s; }
-
-        .video-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
-            border-color: var(--accent-primary);
-        }
-
-        .video-thumbnail {
-            position: relative;
-            aspect-ratio: 16/9;
-            overflow: hidden;
-            background: var(--bg-secondary);
-        }
-
-        .video-thumbnail img {
-            width: 100%;
+            width: 30px;
             height: 100%;
-            object-fit: cover;
-            transition: transform 0.4s ease;
-        }
-
-        .video-card:hover .video-thumbnail img {
-            transform: scale(1.1);
-        }
-
-        .video-overlay {
-            position: absolute;
+            border: 2px solid var(--primary-cyan);
             top: 0;
+            animation: bracketPulse 2s ease-in-out infinite;
+        }
+
+        .subtitle::before {
             left: 0;
+            border-right: none;
+            clip-path: polygon(0 0, 100% 20%, 100% 80%, 0 100%);
+        }
+
+        .subtitle::after {
             right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            border-left: none;
+            clip-path: polygon(100% 0, 0 20%, 0 80%, 100% 100%);
         }
 
-        .video-card:hover .video-overlay {
-            opacity: 1;
+        @keyframes bracketPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
 
-        .play-icon {
-            width: 70px;
-            height: 70px;
-            background: var(--accent-primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2rem;
-            box-shadow: 0 8px 25px var(--shadow-hover);
-            transition: all 0.3s ease;
-        }
-
-        .video-card:hover .play-icon {
-            transform: scale(1.1);
-            background: var(--accent-secondary);
-        }
-
-        .video-info {
-            padding: 1.2rem;
-        }
-
-        .video-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 
+                0 20px 60px rgba(74, 144, 226, 0.15),
+                0 0 0 1px var(--border-light);
+            animation: fadeInScale 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;
+            position: relative;
             overflow: hidden;
         }
 
-        .video-description {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+        /* Animated corner accents */
+        .form-card::before,
+        .form-card::after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--primary-cyan);
+            opacity: 0.4;
         }
 
-        /* About Page */
-        #aboutContent {
-            width: 100%;
-            padding: 3rem;
+        .form-card::before {
+            top: -3px;
+            left: -3px;
+            border-right: none;
+            border-bottom: none;
+            clip-path: polygon(0 0, 100% 0, 100% 30%, 30% 30%, 30% 100%, 0 100%);
+            animation: cornerGlow 3s ease-in-out infinite;
         }
 
-        .about-hero {
-            text-align: center;
-            margin-bottom: 4rem;
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
+        .form-card::after {
+            bottom: -3px;
+            right: -3px;
+            border-left: none;
+            border-top: none;
+            clip-path: polygon(100% 100%, 0 100%, 0 70%, 70% 70%, 70% 0, 100% 0);
+            animation: cornerGlow 3s ease-in-out infinite 1.5s;
         }
 
-        .about-hero h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .about-hero p {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-        }
-
-        .about-container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .about-profile {
-            display: flex;
-            gap: 3rem;
-            align-items: center;
-            background: var(--bg-card);
-            padding: 3rem;
-            border-radius: 20px;
-            border: 2px solid var(--border);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-            margin-bottom: 3rem;
-            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;
-        }
-
-        .about-profile-image {
-            flex-shrink: 0;
-        }
-
-        .about-profile-image img {
-            width: 200px;
-            height: 200px;
-            border-radius: 20px;
-            object-fit: cover;
-            box-shadow: 0 8px 30px var(--shadow-hover);
-            border: 3px solid var(--accent-primary);
-        }
-
-        .about-profile-text h2 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: var(--text-primary);
-        }
-
-        .about-profile-text p {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
-        }
-
-        .about-section {
-            background: var(--bg-card);
-            padding: 2.5rem;
-            border-radius: 20px;
-            border: 2px solid var(--border);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-            margin-bottom: 2rem;
-            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-        }
-
-        .about-section:nth-child(2) { animation-delay: 0.4s; }
-        .about-section:nth-child(3) { animation-delay: 0.5s; }
-        .about-section:nth-child(4) { animation-delay: 0.6s; }
-
-        .about-section h3 {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-            color: var(--accent-primary);
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        .about-section-icon {
-            font-size: 2rem;
-        }
-
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 1rem;
-        }
-
-        .skill-item {
-            background: var(--bg-secondary);
-            padding: 1rem;
-            border-radius: 12px;
-            text-align: center;
-            border: 2px solid var(--border);
-            transition: all 0.3s ease;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .skill-item:hover {
-            background: var(--accent-primary);
-            color: white;
-            border-color: var(--accent-primary);
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px var(--shadow-hover);
-        }
-
-        .tools-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .tool-badge {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            color: white;
-            padding: 0.6rem 1.2rem;
-            border-radius: 20px;
-            font-weight: 500;
-            box-shadow: 0 4px 15px var(--shadow);
-        }
-
-        .about-text {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: var(--text-secondary);
-        }
-
-        .about-text p {
-            margin-bottom: 1rem;
-        }
-
-        /* Floating Particles */
-        .particle {
-            position: fixed;
-            width: 4px;
-            height: 4px;
-            background: var(--accent-primary);
-            border-radius: 50%;
-            opacity: 0.3;
-            pointer-events: none;
-            animation: float 20s infinite ease-in-out;
-        }
-
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0) translateX(0);
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
             }
-            25% {
-                transform: translateY(-100px) translateX(50px);
-            }
-            50% {
-                transform: translateY(-200px) translateX(-50px);
-            }
-            75% {
-                transform: translateY(-100px) translateX(100px);
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
             }
         }
 
-        /* Footer */
-        footer {
-            background: var(--bg-card);
-            border-top: 2px solid var(--border);
-            padding: 3rem 2rem 1.5rem;
-            margin-top: 4rem;
+        @keyframes cornerGlow {
+            0%, 100% { 
+                opacity: 0.4;
+                border-color: var(--primary-cyan);
+            }
+            50% { 
+                opacity: 0.8;
+                border-color: var(--accent-pink);
+            }
         }
 
-        .footer-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 2rem;
+        .form-section {
+            margin-bottom: 2.5rem;
+            padding-bottom: 2.5rem;
+            border-bottom: 2px solid var(--border-light);
+            position: relative;
+            animation: fadeInUp 0.6s ease-out backwards;
         }
 
-        .footer-logo {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            text-decoration: none;
-            color: var(--accent-primary);
-            font-size: 1.5rem;
-            font-weight: 700;
-            transition: transform 0.3s ease;
-        }
-
-        .footer-logo:hover {
-            transform: scale(1.05);
-        }
-
-        .footer-logo-image {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px var(--shadow);
-            object-fit: cover;
-        }
-
-        .footer-social {
-            display: flex;
-            gap: 1.5rem;
-        }
-
-        .social-link {
-            width: 50px;
-            height: 50px;
-            background: var(--bg-secondary);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            font-size: 1.5rem;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            color: var(--text-primary);
-        }
-
-        .social-link:hover {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            color: white;
-            border-color: var(--accent-primary);
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px var(--shadow-hover);
-        }
-
-        .footer-bottom {
-            max-width: 1400px;
-            margin: 2rem auto 0;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border);
-            text-align: center;
-        }
-
-        .copyright {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            font-weight: 300;
-        }
+        .form-section:nth-child(1) { animation-delay: 0.4s; }
+        .form-section:nth-child(2) { animation-delay: 0.5s; }
+        .form-section:nth-child(3) { animation-delay: 0.6s; }
+        .form-section:nth-child(4) { animation-delay: 0.7s; }
+        .form-section:nth-child(5) { animation-delay: 0.8s; }
+        .form-section:nth-child(6) { animation-delay: 0.9s; }
+        .form-section:nth-child(7) { animation-delay: 1s; }
 
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -943,653 +317,1017 @@
             }
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            #devlogContent.active {
-                flex-direction: column;
-            }
+        .form-section:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
 
-            .sidebar {
-                width: 100%;
-                border-right: none;
-                border-bottom: 2px solid var(--border);
-            }
+        /* Animated progress bar behind sections */
+        .form-section::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-cyan), var(--accent-pink));
+            transition: width 0.5s ease-out;
+        }
 
-            .content-area {
-                width: 100%;
-            }
+        .form-section:hover::after {
+            width: 100%;
+        }
 
-            .hero h1 {
-                font-size: 2rem;
-            }
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+        }
 
-            .detail-title {
-                font-size: 2rem;
-            }
+        .section-number {
+            background: linear-gradient(135deg, var(--primary-cyan), var(--primary-blue));
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            box-shadow: 
+                0 4px 15px rgba(74, 144, 226, 0.3),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
 
-            .entry {
-                padding: 1rem;
-            }
+        /* Geometric accent behind number */
+        .section-number::before {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            background: linear-gradient(135deg, var(--primary-cyan), var(--primary-blue));
+            opacity: 0.2;
+            border-radius: 14px;
+            transform: rotate(45deg);
+            z-index: -1;
+            transition: all 0.3s ease;
+        }
 
-            .entry h2 {
-                font-size: 1rem;
-            }
+        .section-title:hover .section-number {
+            transform: translateY(-3px) rotate(5deg);
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.4);
+        }
 
-            nav {
-                flex-direction: column;
-                gap: 1rem;
-            }
+        .section-title:hover .section-number::before {
+            transform: rotate(45deg) scale(1.1);
+            opacity: 0.3;
+        }
 
-            .nav-links {
-                width: 100%;
-                justify-content: center;
-            }
+        .form-group {
+            margin-bottom: 2rem;
+            position: relative;
+        }
 
-            .tiles-container {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 1rem;
-            }
+        label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: color 0.3s ease;
+        }
 
-            .tile.wide {
-                grid-column: span 1;
-            }
+        .required {
+            color: var(--accent-pink);
+            margin-left: 0.3rem;
+            animation: requiredPulse 2s ease-in-out infinite;
+        }
 
-            .downloads-hero h1 {
-                font-size: 2rem;
-            }
+        @keyframes requiredPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
 
-            .download-sub-nav {
-                flex-direction: column;
-                align-items: center;
-            }
+        input[type="text"],
+        input[type="email"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            background: var(--light-bg);
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            color: var(--text-dark);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
 
-            .download-sub-link {
-                width: 100%;
-                max-width: 300px;
-                text-align: center;
-            }
+        /* Gaming-style input decoration */
+        .form-group:focus-within label {
+            color: var(--primary-blue);
+        }
 
-            .videos-container {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-cyan);
+            background: white;
+            box-shadow: 
+                0 0 0 3px rgba(80, 201, 206, 0.1),
+                0 8px 20px rgba(74, 144, 226, 0.15);
+            transform: translateY(-2px);
+        }
 
-            .youtube-hero h1 {
-                font-size: 2rem;
-            }
+        input[type="text"]:hover,
+        input[type="email"]:hover,
+        textarea:hover,
+        select:hover {
+            border-color: var(--primary-blue);
+        }
 
-            footer {
-                padding: 2rem 1rem 1rem;
-            }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
 
-            .footer-content {
-                flex-direction: column;
-                text-align: center;
-                gap: 1.5rem;
-            }
+        /* Animated placeholder effect */
+        input[type="text"]::placeholder,
+        input[type="email"]::placeholder,
+        textarea::placeholder {
+            color: var(--text-medium);
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
 
-            .footer-logo {
-                font-size: 1.3rem;
-            }
+        input[type="text"]:focus::placeholder,
+        input[type="email"]:focus::placeholder,
+        textarea:focus::placeholder {
+            opacity: 0.3;
+        }
 
-            .footer-social {
-                justify-content: center;
-            }
+        .rating-group {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
 
-            .about-hero h1 {
-                font-size: 2rem;
-            }
+        .rating-option {
+            position: relative;
+            flex: 1;
+            min-width: 100px;
+        }
 
-            .about-profile {
-                flex-direction: column;
-                text-align: center;
-                padding: 2rem;
-            }
+        .rating-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
 
-            .about-profile-image img {
-                width: 150px;
-                height: 150px;
-            }
+        .rating-label {
+            display: block;
+            padding: 1rem 1.2rem;
+            background: var(--light-bg);
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-weight: 600;
+            text-align: center;
+            color: var(--text-dark);
+            position: relative;
+            overflow: hidden;
+        }
 
-            .about-section {
-                padding: 1.5rem;
-            }
+        /* Animated hover state with gradient */
+        .rating-label::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--primary-cyan), var(--accent-pink));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 0;
+        }
 
-            .about-section h3 {
-                font-size: 1.4rem;
-            }
+        .rating-label span {
+            position: relative;
+            z-index: 1;
+        }
 
-            .skills-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        .rating-option:hover .rating-label {
+            border-color: var(--primary-cyan);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(80, 201, 206, 0.3);
+        }
+
+        .rating-option:hover .rating-label::before {
+            opacity: 0.1;
+        }
+
+        .rating-option input[type="radio"]:checked + .rating-label {
+            background: linear-gradient(135deg, var(--primary-cyan), var(--primary-blue));
+            border-color: var(--primary-cyan);
+            color: white;
+            box-shadow: 
+                0 8px 20px rgba(80, 201, 206, 0.4),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px) scale(1.05);
+            animation: checkBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .rating-option input[type="radio"]:checked + .rating-label::before {
+            opacity: 0;
+        }
+
+        /* Animated check icon for selected */
+        .rating-option input[type="radio"]:checked + .rating-label::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            font-size: 1rem;
+            color: white;
+            animation: checkPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes checkBounce {
+            0% { transform: translateY(-4px) scale(1); }
+            50% { transform: translateY(-8px) scale(1.1); }
+            100% { transform: translateY(-4px) scale(1.05); }
+        }
+
+        @keyframes checkPop {
+            0% { 
+                transform: scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            100% { 
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
             }
         }
 
-        /* Loading Animation */
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem;
+            background: var(--light-bg);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .checkbox-option:hover {
+            background: white;
+            border-color: var(--border-light);
+            transform: translateX(5px);
+        }
+
+        .checkbox-option input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            accent-color: var(--primary-cyan);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .checkbox-option input[type="checkbox"]:checked {
+            animation: checkboxBounce 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes checkboxBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .checkbox-option label {
+            margin-bottom: 0;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .checkbox-option:has(input:checked) {
+            background: linear-gradient(135deg, rgba(80, 201, 206, 0.1), rgba(74, 144, 226, 0.1));
+            border-color: var(--primary-cyan);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 3rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 1.3rem 2rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            letter-spacing: 0.1em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated gradient background */
+        button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        button:hover::before {
+            transform: translateX(100%);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-cyan), var(--primary-blue));
+            color: white;
+            box-shadow: 
+                0 8px 20px rgba(74, 144, 226, 0.3),
+                inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 
+                0 12px 30px rgba(74, 144, 226, 0.4),
+                inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-cyan);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+        }
+
+        .btn-secondary:hover {
+            background: var(--light-bg);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(74, 144, 226, 0.25);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+
+        /* Loading animation for button */
+        @keyframes buttonLoading {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+                letter-spacing: 0.2em;
+            }
+
+            .header::before,
+            .header::after {
+                width: 40px;
+                height: 40px;
+            }
+
+            .form-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .rating-group {
+                gap: 0.5rem;
+            }
+
+            .rating-option {
+                min-width: auto;
+                flex: 1 1 calc(50% - 0.25rem);
+            }
+
+            .rating-label {
+                padding: 0.8rem 0.8rem;
+                font-size: 0.9rem;
+            }
+
+            .section-title {
+                font-size: 1.3rem;
+            }
+
+            .section-number {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+
+            body::before,
+            body::after {
+                display: none;
+            }
+
+            .form-card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+
+            .form-card::before,
+            .form-card::after {
+                display: none;
+            }
+
+            .button-group {
+                display: none;
+            }
+        }
+
+        /* Particle effect container */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Floating particles */
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh) rotate(360deg);
+                opacity: 0;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Floating Particles -->
-    <div class="particle" style="left: 10%; top: 20%; animation-delay: 0s;"></div>
-    <div class="particle" style="left: 80%; top: 40%; animation-delay: 5s;"></div>
-    <div class="particle" style="left: 30%; top: 60%; animation-delay: 10s;"></div>
-    <div class="particle" style="left: 70%; top: 80%; animation-delay: 15s;"></div>
-    <div class="particle" style="left: 50%; top: 30%; animation-delay: 7s;"></div>
-
-    <header>
-        <nav>
-            <a href="#" class="logo">
-                <img src="images/profile.png" alt="Logo" class="logo-image">
-                The DevLoger
-            </a>
-            <ul class="nav-links">
-                <li><a href="#" class="nav-link active" data-tab="devlog">DevLog</a></li>
-                <li><a href="#" class="nav-link" data-tab="downloads">Downloads</a></li>
-                <li><a href="#" class="nav-link" data-tab="youtube">YouTube</a></li>
-                <li><a href="#" class="nav-link" data-tab="about">About</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main>
-        <!-- DevLog Tab -->
-        <div id="devlogContent" class="tab-content active">
-            <aside class="sidebar">
-                <section class="hero">
-                    <h1>DevLog</h1>
-                    <p>My Journey</p>
-                </section>
-
-                <div class="entries-container" id="entriesContainer">
-                    <!-- Sample Entry 1 -->
-                    <article class="entry" data-entry-id="1">
-                        <div class="entry-header">
-                            <div class="entry-date">10. Feb 2026</div>
-                            <div class="entry-tags">
-                                <span class="tag">Loopfire</span>
-                                <span class="tag">Major Update</span>
-                            </div>
-                        </div>
-                        <h2>Loopfire Proof of Concept V4 soon!</h2>
-                        <p class="entry-preview">Loopfire is currently making great progress.</p>
-                        <div class="entry-content">
-                            <p>Loopfire is currently making great progress.
-                               The upgrade system has been completely revamped, and the new gameplay is fundamentally different from the old one.
-                               The new progression system is based on unlocking new skills rather than the previous upgrade requirement.
-                               I have also made some visual improvements!</p>
-                        </div>
-                        <div class="entry-meta">
-                            <div class="meta-item">
-                                <span class="meta-icon">📝</span>
-                                <span>343 Wörter</span>
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-icon">⏱️</span>
-                                <span>1 Min. Lesezeit</span>
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- Sample Entry 2 -->
-                    <!-- <article class="entry" data-entry-id="2">
-                        <div class="entry-header">
-                            <div class="entry-date">08. Feb 2026</div>
-                            <div class="entry-tags">
-                                <span class="tag">Backend</span>
-                                <span class="tag">API</span>
-                            </div>
-                        </div>
-                        <h2>API-Integration optimiert</h2>
-                        <p class="entry-preview">Die Optimierung der API-Schnittstellen hat zu einer deutlichen Verbesserung...</p>
-                        <div class="entry-content">
-                            <p>Die Optimierung der API-Schnittstellen hat zu einer deutlichen Verbesserung der Ladezeiten geführt. Durch die Implementierung von Caching-Strategien und die Reduzierung redundanter Anfragen konnten wir die Performance um 40% steigern. Die Animationen laufen nun butterweich.</p>
-                        </div>
-                        <div class="entry-meta">
-                            <div class="meta-item">
-                                <span class="meta-icon">📝</span>
-                                <span>420 Wörter</span>
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-icon">⏱️</span>
-                                <span>3 Min. Lesezeit</span>
-                            </div>
-                        </div>
-                    </article> -->
-
-                    <!-- Sample Entry 3 -->
-                    <!-- <article class="entry" data-entry-id="3">
-                        <div class="entry-header">
-                            <div class="entry-date">05. Feb 2026</div>
-                            <div class="entry-tags">
-                                <span class="tag">UX</span>
-                                <span class="tag">Sound</span>
-                            </div>
-                        </div>
-                        <h2>Sound-Effekte implementiert</h2>
-                        <p class="entry-preview">Die Hinzufügung subtiler Sound-Effekte für Benutzerinteraktionen...</p>
-                        <div class="entry-content">
-                            <p>Die Hinzufügung subtiler Sound-Effekte für Benutzerinteraktionen hat die User Experience erheblich verbessert. Jeder Klick und Hover wird nun mit einem angenehmen Audio-Feedback begleitet, das die Seite lebendig und interaktiv macht, ohne aufdringlich zu wirken.</p>
-                        </div>
-                        <div class="entry-meta">
-                            <div class="meta-item">
-                                <span class="meta-icon">📝</span>
-                                <span>280 Wörter</span>
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-icon">⏱️</span>
-                                <span>2 Min. Lesezeit</span>
-                            </div>
-                        </div>
-                    </article> -->
-                </div>
-            </aside>
-
-            <section class="content-area" id="contentArea">
-                <div class="placeholder-message">
-                    <h2>Welcome to my DevLog! 👋</h2>
-                    <p>Choose one entry on the left and start reading!</p>
-                </div>
-            </section>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Loopfire</div>
+            <div class="subtitle">Playtest Feedback</div>
         </div>
 
-        <!-- Downloads Tab -->
-        <div id="downloadsContent" class="tab-content">
-            <section class="downloads-hero">
-                <h1>Downloads</h1>
-                <p>Here you can download my free projects!</p>
-            </section>
-
-            <!-- Download Sub-Navigation -->
-            <div class="download-sub-nav">
-                <button class="download-sub-link active" data-download-tab="current">Aktuelle Versionen</button>
-                <button class="download-sub-link" data-download-tab="archive">Archiv</button>
-            </div>
-
-            <!-- Current Downloads -->
-            <div id="currentDownloads" class="download-sub-content active">
-                <div class="tiles-container">
-                    <!-- Game Tile 1 -->
-                    <a href="https://drive.google.com/file/d/1VHh8htGurnGh1hasU3TOnTC1Lwd6rmFF/view?usp=drive_link" target="_blank" class="tile wide">
-                        <div class="tile-icon">🔫</div>
-                        <span class="tile-badge">NEU</span>
-                        <div class="tile-content">
-                            <div class="tile-title">Loopfire</div>
-                            <div class="tile-subtitle">Roguelike Arena Top Down Shooter • Indev</div>
-                        </div>
-                    </a>
-
-                    <!-- Game Tile 2 -->
-                    <a href="https://drive.google.com/file/d/13tz2IIS0zxtH1hNRLPeL4owlg0og3L9j/view?usp=drive_link" target="_blank" class="tile wide">
-                        <div class="tile-icon">⚔️</div>
-                        <span class="tile-badge">Most Content</span>
-                        <div class="tile-content">
-                            <div class="tile-title">Fantasy War</div>
-                            <div class="tile-subtitle">Arcade Battle Strategy • preAlpha</div>
-                        </div>
-                    </a>
-
-                    <!-- Game Tile 3 -->
-                    <a href="https://drive.google.com/file/d/1McnsyQDSQgV-feW1ZAnA2fOzRaPVdMt9/view?usp=drive_link" target="_blank" class="tile">
-                        <div class="tile-icon">🧊</div>
-                        <div class="tile-content">
-                            <div class="tile-title">Cube Hell</div>
-                            <div class="tile-subtitle">Arcade Highscore • v3</div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Archive Downloads -->
-            <div id="archiveDownloads" class="download-sub-content">
-                <div class="tiles-container">
-                    <!-- Archive Game Tile 1 -->
-                    <a href="https://drive.google.com/file/d/1kUPi1AYIqIDovJkRe2sLodK_ooPNcsBW/view?usp=drive_link" target="_blank" class="tile">
-                        <div class="tile-icon">🔫</div>
-                        <span class="tile-badge">PoC</span>
-                        <div class="tile-content">
-                            <div class="tile-title">Loopfire</div>
-                            <div class="tile-subtitle">Proof of Concept • 1</div>
-                        </div>
-                    </a>
-
-                    <!-- Archive Game Tile 2 -->
-                    <a href="https://drive.google.com/file/d/1jBDXA1F8tp5WNck-sndVJ9ByJlqbFBBT/view?usp=drive_link" target="_blank" class="tile">
-                        <div class="tile-icon">🔫</div>
-                        <span class="tile-badge">PoC</span>
-                        <div class="tile-content">
-                            <div class="tile-title">Loopfire</div>
-                            <div class="tile-subtitle">Proof of Concept • 2</div>
-                        </div>
-                    </a>
-
-                    <!-- Archive Game Tile 3 -->
-                    <!-- <a href="https://drive.google.com/your-archive-link-3" target="_blank" class="tile">
-                        <div class="tile-icon">🧊</div>
-                        <span class="tile-badge">v2</span>
-                        <div class="tile-content">
-                            <div class="tile-title">Cube Hell</div>
-                            <div class="tile-subtitle">Old Version • v2.0</div>
-                        </div>
-                    </a> -->
-
-                    <!-- Archive Game Tile 4 -->
-                    <!-- <a href="https://drive.google.com/your-archive-link-4" target="_blank" class="tile">
-                        <div class="tile-icon">🧊</div>
-                        <span class="tile-badge">v1</span>
-                        <div class="tile-content">
-                            <div class="tile-title">Cube Hell</div>
-                            <div class="tile-subtitle">Old Version • v1.0</div>
-                        </div>
-                    </a> -->
-                </div>
-            </div>
-        </div>
-
-        <!-- YouTube Tab -->
-        <div id="youtubeContent" class="tab-content">
-            <section class="youtube-hero">
-                <h1>YouTube Videos</h1>
-                <p>Watch my newest tutorials and devlogs!</p>
-            </section>
-
-            <div class="videos-container">
-                <!-- Video 1 -->
-                <a href="https://youtu.be/UxTz1FhcZmY" target="_blank" class="video-card">
-                    <div class="video-thumbnail">
-                        <img src="https://img.youtube.com/vi/UxTz1FhcZmY/maxresdefault.jpg" alt="Video Thumbnail">
-                        <div class="video-overlay">
-                            <div class="play-icon">▶</div>
-                        </div>
+        <div class="form-card">
+            <form id="feedbackForm">
+                <!-- Persönliche Informationen -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <span class="section-number">1</span>
+                        Über dich
+                    </h2>
+                    
+                    <div class="form-group">
+                        <label for="name">Name / Nickname <span class="required">*</span></label>
+                        <input type="text" id="name" name="name" required>
                     </div>
-                    <div class="video-info">
-                        <h3 class="video-title">Mein erstes Spiel - Development Vlog #1</h3>
-                        <p class="video-description">In diesem Video zeige ich euch den Entwicklungsprozess meines ersten Indie-Spiels.</p>
-                    </div>
-                </a>
 
-                <!-- Video 2 -->
-                <a href="https://youtu.be/7mIQHR9qrQ4" target="_blank" class="video-card">
-                    <div class="video-thumbnail">
-                        <img src="https://img.youtube.com/vi/7mIQHR9qrQ4/maxresdefault.jpg" alt="Video Thumbnail">
-                        <div class="video-overlay">
-                            <div class="play-icon">▶</div>
-                        </div>
+                    <div class="form-group">
+                        <label for="email">E-Mail (optional)</label>
+                        <input type="email" id="email" name="email">
                     </div>
-                    <div class="video-info">
-                        <h3 class="video-title">Unity Tutorial - Besseres Movement System</h3>
-                        <p class="video-description">Lerne, wie du ein flüssiges Character Movement in Unity programmierst.</p>
-                    </div>
-                </a>
 
-                <!-- Video 3 -->
-                <a href="https://youtu.be/32pHb9sEqlQ" target="_blank" class="video-card">
-                    <div class="video-thumbnail">
-                        <img src="https://img.youtube.com/vi/32pHb9sEqlQ/maxresdefault.jpg" alt="Video Thumbnail">
-                        <div class="video-overlay">
-                            <div class="play-icon">▶</div>
-                        </div>
-                    </div>
-                    <div class="video-info">
-                        <h3 class="video-title">Pixel Art für Anfänger - Complete Guide</h3>
-                        <p class="video-description">Alles was du über Pixel Art wissen musst, von den Grundlagen bis zu fortgeschrittenen Techniken.</p>
-                    </div>
-                </a>
-
-                <!-- Video 4 -->
-                <a href="https://youtu.be/QcFxbZOuKpc" target="_blank" class="video-card">
-                    <div class="video-thumbnail">
-                        <img src="https://img.youtube.com/vi/QcFxbZOuKpc/maxresdefault.jpg" alt="Video Thumbnail">
-                        <div class="video-overlay">
-                            <div class="play-icon">▶</div>
-                        </div>
-                    </div>
-                    <div class="video-info">
-                        <h3 class="video-title">Game Jam Highlights - 48h Challenge</h3>
-                        <p class="video-description">Meine besten Momente aus dem letzten Game Jam und was ich dabei gelernt habe.</p>
-                    </div>
-                </a>
-
-                <!-- Video 5 -->
-                <a href="https://youtu.be/sC0HfbONLOw" target="_blank" class="video-card">
-                    <div class="video-thumbnail">
-                        <img src="https://img.youtube.com/vi/sC0HfbONLOw/maxresdefault.jpg" alt="Video Thumbnail">
-                        <div class="video-overlay">
-                            <div class="play-icon">▶</div>
-                        </div>
-                    </div>
-                    <div class="video-info">
-                        <h3 class="video-title">Sound Design Secrets für Indie Games</h3>
-                        <p class="video-description">Wie du professionelle Soundeffekte für deine Spiele erstellst, auch mit kleinem Budget.</p>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <!-- About Tab -->
-        <div id="aboutContent" class="tab-content">
-            <section class="about-hero">
-                <h1>About Me</h1>
-                <p>Lerne mich und meine Arbeit kennen</p>
-            </section>
-
-            <div class="about-container">
-                <!-- Profile Section -->
-                <div class="about-profile">
-                    <div class="about-profile-image">
-                        <img src="images/profile.png" alt="The DevLoger">
-                    </div>
-                    <div class="about-profile-text">
-                        <h2>Hey, ich bin The DevLoger! 👋</h2>
-                        <p>Ich bin ein leidenschaftlicher Game Developer und Content Creator. Auf dieser Seite dokumentiere ich meine Entwicklungsreise, teile meine Spiele und erstelle Tutorials für die Community.</p>
-                        <p>Mein Ziel ist es, kreative und unterhaltsame Spielerlebnisse zu schaffen und dabei anderen zu zeigen, wie sie ihre eigenen Projekte umsetzen können.</p>
+                    <div class="form-group">
+                        <label for="experience">Gaming-Erfahrung <span class="required">*</span></label>
+                        <select id="experience" name="experience" required>
+                            <option value="">Bitte wählen...</option>
+                            <option value="casual">Casual Gamer (1-5 Std./Woche)</option>
+                            <option value="regular">Regular Gamer (5-15 Std./Woche)</option>
+                            <option value="hardcore">Hardcore Gamer (15+ Std./Woche)</option>
+                            <option value="developer">Game Developer</option>
+                        </select>
                     </div>
                 </div>
-            </div>
+
+                <!-- Gesamteindruck -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <span class="section-number">2</span>
+                        Erster Eindruck
+                    </h2>
+
+                    <div class="form-group">
+                        <label>Gesamtbewertung <span class="required">*</span></label>
+                        <div class="rating-group">
+                            <div class="rating-option">
+                                <input type="radio" id="rating1" name="overall_rating" value="1" required>
+                                <label for="rating1" class="rating-label"><span>1 ⭐</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="rating2" name="overall_rating" value="2">
+                                <label for="rating2" class="rating-label"><span>2 ⭐</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="rating3" name="overall_rating" value="3">
+                                <label for="rating3" class="rating-label"><span>3 ⭐</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="rating4" name="overall_rating" value="4">
+                                <label for="rating4" class="rating-label"><span>4 ⭐</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="rating5" name="overall_rating" value="5">
+                                <label for="rating5" class="rating-label"><span>5 ⭐</span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="first_impression">Was war dein erster Gedanke beim Spielstart?</label>
+                        <textarea id="first_impression" name="first_impression"></textarea>
+                    </div>
+                </div>
+
+                <!-- Gameplay -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <span class="section-number">3</span>
+                        Gameplay & Mechaniken
+                    </h2>
+
+                    <div class="form-group">
+                        <label>Wie intuitiv waren die Steuerung und Mechaniken? <span class="required">*</span></label>
+                        <div class="rating-group">
+                            <div class="rating-option">
+                                <input type="radio" id="intuitive1" name="intuitive" value="sehr_verwirrend" required>
+                                <label for="intuitive1" class="rating-label"><span>Sehr verwirrend</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="intuitive2" name="intuitive" value="etwas_verwirrend">
+                                <label for="intuitive2" class="rating-label"><span>Etwas verwirrend</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="intuitive3" name="intuitive" value="okay">
+                                <label for="intuitive3" class="rating-label"><span>Okay</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="intuitive4" name="intuitive" value="gut">
+                                <label for="intuitive4" class="rating-label"><span>Gut</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="intuitive5" name="intuitive" value="sehr_intuitiv">
+                                <label for="intuitive5" class="rating-label"><span>Sehr intuitiv</span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Wie würdest du den Schwierigkeitsgrad bewerten? <span class="required">*</span></label>
+                        <div class="rating-group">
+                            <div class="rating-option">
+                                <input type="radio" id="difficulty1" name="difficulty" value="viel_zu_einfach" required>
+                                <label for="difficulty1" class="rating-label"><span>Viel zu einfach</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="difficulty2" name="difficulty" value="zu_einfach">
+                                <label for="difficulty2" class="rating-label"><span>Zu einfach</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="difficulty3" name="difficulty" value="genau_richtig">
+                                <label for="difficulty3" class="rating-label"><span>Genau richtig</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="difficulty4" name="difficulty" value="zu_schwer">
+                                <label for="difficulty4" class="rating-label"><span>Zu schwer</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="difficulty5" name="difficulty" value="viel_zu_schwer">
+                                <label for="difficulty5" class="rating-label"><span>Viel zu schwer</span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gameplay_feedback">Was hat dir am Gameplay am besten gefallen?</label>
+                        <textarea id="gameplay_feedback" name="gameplay_feedback"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gameplay_issues">Gab es Gameplay-Elemente, die frustrierend waren?</label>
+                        <textarea id="gameplay_issues" name="gameplay_issues"></textarea>
+                    </div>
+                </div>
+
+                <!-- Tutorial & Onboarding -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <span class="section-number">4</span>
+                        Tutorial & Einstieg
+                    </h2>
+
+                    <div class="form-group">
+                        <label>War das Tutorial hilfreich? <span class="required">*</span></label>
+                        <div class="rating-group">
+                            <div class="rating-option">
+                                <input type="radio" id="tutorial1" name="tutorial" value="nicht_vorhanden" required>
+                                <label for="tutorial1" class="rating-label"><span>Nicht vorhanden</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="tutorial2" name="tutorial" value="zu_kurz">
+                                <label for="tutorial2" class="rating-label"><span>Zu kurz</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="tutorial3" name="tutorial" value="genau_richtig">
+                                <label for="tutorial3" class="rating-label"><span>Genau richtig</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="tutorial4" name="tutorial" value="zu_lang">
+                                <label for="tutorial4" class="rating-label"><span>Zu lang</span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tutorial_missing">Gab es etwas, das besser erklärt werden sollte?</label>
+                        <textarea id="tutorial_missing" name="tutorial_missing"></textarea>
+                    </div>
+                </div>
+
+                <!-- Technisches -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <span class="section-number">5</span>
+                        Technische Performance
+                    </h2>
+
+                    <div class="form-group">
+                        <label for="platform">Auf welcher Plattform hast du gespielt?</label>
+                        <input type="text" id="platform" name="platform" placeholder="z.B. Windows 11, Mac, Steam Deck...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hattest du technische Probleme?</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="bug1" name="bugs" value="crashes">
+                                <label for="bug1">Crashes / Abstürze</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="bug2" name="bugs" value="fps_drops">
+                                <label for="bug2">FPS-Drops / Ruckeln</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="bug3" name="bugs" value="audio_issues">
+                                <label for="bug3">Audio-Probleme</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="bug4" name="bugs" value="visual_glitches">
+                                <label for="bug4">Visuelle Glitches</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="bug5" name="bugs" value="input_lag">
+                                <label for="bug5">Input Lag</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="bug6" name="bugs" value="none">
+                                <label for="bug6">Keine Probleme</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bug_details">Beschreibe technische Probleme im Detail (wann, wo, wie oft):</label>
+                        <textarea id="bug_details" name="bug_details"></textarea>
+                    </div>
+                </div>
+
+                <!-- Spaß & Wiederspielbarkeit -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <span class="section-number">6</span>
+                        Spaßfaktor & Motivation
+                    </h2>
+
+                    <div class="form-group">
+                        <label>Wie sehr hat dich das Spiel gefesselt? <span class="required">*</span></label>
+                        <div class="rating-group">
+                            <div class="rating-option">
+                                <input type="radio" id="engagement1" name="engagement" value="1" required>
+                                <label for="engagement1" class="rating-label"><span>Überhaupt nicht</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="engagement2" name="engagement" value="2">
+                                <label for="engagement2" class="rating-label"><span>Kaum</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="engagement3" name="engagement" value="3">
+                                <label for="engagement3" class="rating-label"><span>Mittel</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="engagement4" name="engagement" value="4">
+                                <label for="engagement4" class="rating-label"><span>Sehr</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="engagement5" name="engagement" value="5">
+                                <label for="engagement5" class="rating-label"><span>Extrem</span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Würdest du das Spiel weiterempfehlen? <span class="required">*</span></label>
+                        <div class="rating-group">
+                            <div class="rating-option">
+                                <input type="radio" id="recommend1" name="recommend" value="nein" required>
+                                <label for="recommend1" class="rating-label"><span>Nein</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="recommend2" name="recommend" value="vielleicht">
+                                <label for="recommend2" class="rating-label"><span>Vielleicht</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="recommend3" name="recommend" value="ja">
+                                <label for="recommend3" class="rating-label"><span>Ja</span></label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="recommend4" name="recommend" value="auf_jeden_fall">
+                                <label for="recommend4" class="rating-label"><span>Auf jeden Fall!</span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fun_factor">Was hat dir am meisten Spaß gemacht?</label>
+                        <textarea id="fun_factor" name="fun_factor"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="boring_parts">Gab es langweilige oder sich wiederholende Teile?</label>
+                        <textarea id="boring_parts" name="boring_parts"></textarea>
+                    </div>
+                </div>
+
+                <!-- Verbesserungsvorschläge -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <span class="section-number">7</span>
+                        Feedback & Vorschläge
+                    </h2>
+
+                    <div class="form-group">
+                        <label for="improvements">Was würdest du am Spiel ändern oder verbessern?</label>
+                        <textarea id="improvements" name="improvements"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="missing_features">Welche Features würdest du dir wünschen?</label>
+                        <textarea id="missing_features" name="missing_features"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="additional_comments">Weitere Anmerkungen:</label>
+                        <textarea id="additional_comments" name="additional_comments"></textarea>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn-secondary" onclick="resetForm()">Zurücksetzen</button>
+                    <button type="button" class="btn-primary" onclick="generatePDF()">Als PDF exportieren</button>
+                </div>
+            </form>
         </div>
-    </main>
-
-    <footer>
-        <div class="footer-content">
-            <a href="#" class="footer-logo">
-                <img src="images/profile.png" alt="Logo" class="footer-logo-image">
-                The DevLoger
-            </a>
-
-            <div class="footer-social">
-                <a href="https://discord.gg/8TgZgtEa" target="_blank" class="social-link" title="Discord">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                    </svg>
-                </a>
-
-                <a href="https://instagram.com/your-instagram" target="_blank" class="social-link" title="Instagram">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07c3.252.148 4.771 1.691 4.919 4.919c.058 1.265.069 1.645.069 4.849c0 3.205-.012 3.584-.069 4.849c-.149 3.225-1.664 4.771-4.919 4.919c-1.266.058-1.644.07-4.85.07c-3.204 0-3.584-.012-4.849-.07c-3.26-.149-4.771-1.699-4.919-4.92c-.058-1.265-.07-1.644-.07-4.849c0-3.204.013-3.583.07-4.849c.149-3.227 1.664-4.771 4.919-4.919c1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072C2.695.272.273 2.69.073 7.052C.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948c.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072c4.354-.2 6.782-2.618 6.979-6.98c.059-1.28.073-1.689.073-4.948c0-3.259-.014-3.667-.072-4.947c-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324a6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8a4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881a1.44 1.44 0 0 0 0-2.881z"/>
-                    </svg>
-                </a>
-
-                <a href="https://www.youtube.com/channel/UC_a6Bnl5xG_2GGf3cohZeIQ" target="_blank" class="social-link" title="YouTube">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                    </svg>
-                </a>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            <p class="copyright">© 2026 The DevLoger. Alle Rechte vorbehalten.</p>
-        </div>
-    </footer>
+    </div>
 
     <script>
-        // Tab Switching
-        const navLinks = document.querySelectorAll('.nav-link');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        navLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Remove active class from all links and tabs
-                navLinks.forEach(l => l.classList.remove('active'));
-                tabContents.forEach(t => t.classList.remove('active'));
-                
-                // Add active class to clicked link
-                this.classList.add('active');
-                
-                // Show corresponding tab
-                const tabId = this.dataset.tab + 'Content';
-                document.getElementById(tabId).classList.add('active');
-            });
-        });
-
-        // Download Sub-Tab Switching
-        const downloadSubLinks = document.querySelectorAll('.download-sub-link');
-        const downloadSubContents = document.querySelectorAll('.download-sub-content');
-
-        downloadSubLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                // Remove active class from all sub-links and sub-contents
-                downloadSubLinks.forEach(l => l.classList.remove('active'));
-                downloadSubContents.forEach(c => c.classList.remove('active'));
-                
-                // Add active class to clicked link
-                this.classList.add('active');
-                
-                // Show corresponding sub-content
-                const subTabId = this.dataset.downloadTab + 'Downloads';
-                document.getElementById(subTabId).classList.add('active');
-            });
-        });
-
-        // Entry Click Handler
-        const entries = document.querySelectorAll('.entry');
-        const contentArea = document.getElementById('contentArea');
-
-        entries.forEach(entry => {
-            entry.addEventListener('click', function() {
-                // Remove active class from all entries
-                entries.forEach(e => e.classList.remove('active'));
-                
-                // Add active class to clicked entry
-                this.classList.add('active');
-
-                // Get entry data
-                const title = this.querySelector('h2').textContent;
-                const date = this.querySelector('.entry-date').textContent;
-                const tags = Array.from(this.querySelectorAll('.tag')).map(tag => tag.textContent);
-                const content = this.querySelector('.entry-content').innerHTML;
-                const metaItems = this.querySelector('.entry-meta').innerHTML;
-
-                // Build detail view
-                const detailHTML = `
-                    <div class="detail-view">
-                        <div class="detail-header">
-                            <h1 class="detail-title">${title}</h1>
-                            <div class="detail-meta-row">
-                                <div class="detail-date">${date}</div>
-                                <div class="detail-tags">
-                                    ${tags.map(tag => `<span class="detail-tag">${tag}</span>`).join('')}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="detail-content">
-                            ${content}
-                        </div>
-                        <div class="detail-meta-footer">
-                            ${metaItems.replace(/meta-item/g, 'detail-meta-item').replace(/meta-icon/g, 'detail-meta-icon')}
-                        </div>
-                    </div>
-                `;
-
-                // Update content area
-                contentArea.innerHTML = detailHTML;
-            });
-        });
-
-        // Intersection Observer for scroll animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        // Observe all entries
-        document.querySelectorAll('.entry').forEach(entry => {
-            observer.observe(entry);
-        });
-
-        // Parallax effect for particles
-        document.addEventListener('mousemove', (e) => {
-            const particles = document.querySelectorAll('.particle');
-            const mouseX = e.clientX / window.innerWidth;
-            const mouseY = e.clientY / window.innerHeight;
-
-            particles.forEach((particle, index) => {
-                const speed = (index + 1) * 0.5;
-                const x = (mouseX - 0.5) * speed * 50;
-                const y = (mouseY - 0.5) * speed * 50;
-                
-                particle.style.transform = `translate(${x}px, ${y}px)`;
-            });
-        });
-
-        // Add ripple effect on card click
-        document.querySelectorAll('.entry').forEach(entry => {
-            entry.addEventListener('click', function(e) {
-                const ripple = document.createElement('div');
-                const rect = this.getBoundingClientRect();
-                const size = Math.max(rect.width, rect.height);
-                const x = e.clientX - rect.left - size / 2;
-                const y = e.clientY - rect.top - size / 2;
-
-                ripple.style.cssText = `
-                    position: absolute;
-                    width: ${size}px;
-                    height: ${size}px;
-                    border-radius: 50%;
-                    background: radial-gradient(circle, rgba(230, 126, 34, 0.3) 0%, transparent 70%);
-                    left: ${x}px;
-                    top: ${y}px;
-                    pointer-events: none;
-                    animation: ripple 0.6s ease-out;
-                `;
-
-                this.appendChild(ripple);
-
-                setTimeout(() => ripple.remove(), 600);
-            });
-        });
-
-        // Add ripple animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes ripple {
-                from {
-                    transform: scale(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: scale(2);
-                    opacity: 0;
-                }
+        function resetForm() {
+            if (confirm('Möchtest du wirklich alle Eingaben zurücksetzen?')) {
+                document.getElementById('feedbackForm').reset();
             }
-        `;
-        document.head.appendChild(style);
+        }
 
-        console.log('🎨 DevLog geladen! Viel Spaß beim Dokumentieren deiner Entwicklung!');
+        function generatePDF() {
+            const form = document.getElementById('feedbackForm');
+            
+            // Validation
+            if (!form.checkValidity()) {
+                alert('Bitte fülle alle Pflichtfelder (*) aus.');
+                form.reportValidity();
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            let yPosition = 20;
+            const lineHeight = 7;
+            const pageHeight = doc.internal.pageSize.height;
+            const margin = 20;
+
+            // Helper function to add text with page break
+            function addText(text, x, y, options = {}) {
+                if (y > pageHeight - margin) {
+                    doc.addPage();
+                    y = margin;
+                }
+                doc.text(text, x, y, options);
+                return y + lineHeight;
+            }
+
+            // Helper function to add wrapped text
+            function addWrappedText(text, x, y, maxWidth) {
+                if (!text || text.trim() === '') return y;
+                const lines = doc.splitTextToSize(text, maxWidth);
+                for (let line of lines) {
+                    if (y > pageHeight - margin) {
+                        doc.addPage();
+                        y = margin;
+                    }
+                    doc.text(line, x, y);
+                    y += lineHeight;
+                }
+                return y;
+            }
+
+            // Title
+            doc.setFontSize(24);
+            doc.setFont(undefined, 'bold');
+            yPosition = addText('LOOPFIRE', margin, yPosition);
+            
+            doc.setFontSize(16);
+            yPosition = addText('Playtest Feedback Report', margin, yPosition);
+            
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            yPosition = addText(`Datum: ${new Date().toLocaleDateString('de-DE')}`, margin, yPosition);
+            yPosition += lineHeight;
+
+            // Section 1: Über dich
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            yPosition = addText('1. Über dich', margin, yPosition);
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            yPosition = addText(`Name: ${document.getElementById('name').value}`, margin, yPosition);
+            if (document.getElementById('email').value) {
+                yPosition = addText(`E-Mail: ${document.getElementById('email').value}`, margin, yPosition);
+            }
+            yPosition = addText(`Gaming-Erfahrung: ${document.getElementById('experience').options[document.getElementById('experience').selectedIndex].text}`, margin, yPosition);
+            yPosition += lineHeight;
+
+            // Section 2: Erster Eindruck
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            yPosition = addText('2. Erster Eindruck', margin, yPosition);
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            const rating = document.querySelector('input[name="overall_rating"]:checked');
+            yPosition = addText(`Gesamtbewertung: ${rating ? rating.value : 'N/A'} / 5`, margin, yPosition);
+            yPosition = addWrappedText(`Erster Gedanke: ${document.getElementById('first_impression').value}`, margin, yPosition, 170);
+            yPosition += lineHeight;
+
+            // Section 3: Gameplay
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            yPosition = addText('3. Gameplay & Mechaniken', margin, yPosition);
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            const intuitive = document.querySelector('input[name="intuitive"]:checked');
+            yPosition = addText(`Intuitivität: ${intuitive ? intuitive.nextElementSibling.textContent : 'N/A'}`, margin, yPosition);
+            
+            const difficulty = document.querySelector('input[name="difficulty"]:checked');
+            yPosition = addText(`Schwierigkeitsgrad: ${difficulty ? difficulty.nextElementSibling.textContent : 'N/A'}`, margin, yPosition);
+            
+            yPosition = addWrappedText(`Gameplay-Highlights: ${document.getElementById('gameplay_feedback').value}`, margin, yPosition, 170);
+            yPosition = addWrappedText(`Frustrierende Elemente: ${document.getElementById('gameplay_issues').value}`, margin, yPosition, 170);
+            yPosition += lineHeight;
+
+            // Section 4: Tutorial
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            yPosition = addText('4. Tutorial & Einstieg', margin, yPosition);
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            const tutorial = document.querySelector('input[name="tutorial"]:checked');
+            yPosition = addText(`Tutorial-Bewertung: ${tutorial ? tutorial.nextElementSibling.textContent : 'N/A'}`, margin, yPosition);
+            yPosition = addWrappedText(`Verbesserungsvorschläge: ${document.getElementById('tutorial_missing').value}`, margin, yPosition, 170);
+            yPosition += lineHeight;
+
+            // Section 5: Technisches
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            yPosition = addText('5. Technische Performance', margin, yPosition);
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            if (document.getElementById('platform').value) {
+                yPosition = addText(`Plattform: ${document.getElementById('platform').value}`, margin, yPosition);
+            }
+            
+            const bugs = Array.from(document.querySelectorAll('input[name="bugs"]:checked'))
+                .map(cb => cb.nextElementSibling.textContent)
+                .join(', ');
+            yPosition = addWrappedText(`Probleme: ${bugs || 'Keine'}`, margin, yPosition, 170);
+            yPosition = addWrappedText(`Details: ${document.getElementById('bug_details').value}`, margin, yPosition, 170);
+            yPosition += lineHeight;
+
+            // Section 6: Spaßfaktor
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            yPosition = addText('6. Spaßfaktor & Motivation', margin, yPosition);
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            const engagement = document.querySelector('input[name="engagement"]:checked');
+            yPosition = addText(`Fesselungsgrad: ${engagement ? engagement.nextElementSibling.textContent : 'N/A'}`, margin, yPosition);
+            
+            const recommend = document.querySelector('input[name="recommend"]:checked');
+            yPosition = addText(`Weiterempfehlung: ${recommend ? recommend.nextElementSibling.textContent : 'N/A'}`, margin, yPosition);
+            
+            yPosition = addWrappedText(`Spaß-Highlights: ${document.getElementById('fun_factor').value}`, margin, yPosition, 170);
+            yPosition = addWrappedText(`Langweilige Teile: ${document.getElementById('boring_parts').value}`, margin, yPosition, 170);
+            yPosition += lineHeight;
+
+            // Section 7: Feedback
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            yPosition = addText('7. Feedback & Vorschläge', margin, yPosition);
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            yPosition = addWrappedText(`Verbesserungen: ${document.getElementById('improvements').value}`, margin, yPosition, 170);
+            yPosition = addWrappedText(`Gewünschte Features: ${document.getElementById('missing_features').value}`, margin, yPosition, 170);
+            yPosition = addWrappedText(`Weitere Anmerkungen: ${document.getElementById('additional_comments').value}`, margin, yPosition, 170);
+
+            // Save PDF
+            const timestamp = new Date().toISOString().slice(0, 10);
+            const playerName = document.getElementById('name').value.replace(/[^a-z0-9]/gi, '_');
+            doc.save(`Loopfire_Feedback_${playerName}_${timestamp}.pdf`);
+        }
+
+        // Prevent "none" checkbox from being checked with others
+        document.getElementById('bug6').addEventListener('change', function() {
+            if (this.checked) {
+                document.querySelectorAll('input[name="bugs"]:not(#bug6)').forEach(cb => cb.checked = false);
+            }
+        });
+
+        document.querySelectorAll('input[name="bugs"]:not(#bug6)').forEach(cb => {
+            cb.addEventListener('change', function() {
+                if (this.checked) {
+                    document.getElementById('bug6').checked = false;
+                }
+            });
+        });
     </script>
 </body>
 </html>
