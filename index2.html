@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#3d6b50" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Ernährung" />
+  <title>Ernährungsplan</title>
+
+  <!-- PWA Manifest inline als data URI -->
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Ern%C3%A4hrungsplan%22%2C%22short_name%22%3A%22Ern%C3%A4hrung%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f6f2eb%22%2C%22theme_color%22%3A%22%233d6b50%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%2520viewBox%3D'0%25200%2520512%2520512'%253E%253Crect%2520width%3D'512'%2520height%3D'512'%2520fill%3D'%25233d6b50'%2520rx%3D'80'%2F%253E%253Ctext%2520x%3D'50%2525'%2520y%3D'58%2525'%2520text-anchor%3D'middle'%2520font-size%3D'280'%253E%25F0%259F%25A5%25A6%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D" />
+
+  <!-- Apple Touch Icon via Canvas (generiert beim Laden) -->
+  <link rel="apple-touch-icon" id="apple-icon" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f6f2eb;
+      --surface: #fff;
+      --green: #3d6b50;
+      --green-light: #e8f0ec;
+      --green-mid: #5a8a6a;
+      --text: #1e1e1e;
+      --muted: #7a7a6e;
+      --border: #e2ddd4;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    html {
+      background: var(--bg);
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      /* Natural scroll — no overflow:hidden, so keyboard doesn't break layout */
+    }
+
+    /* ── LAYOUT ── */
+    #app {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── STICKY TOP ── */
+    .sticky-top {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--green);
+      color: #fff;
+      padding: 48px 20px 12px;
+    }
+    header h1 {
+      font-family: 'Lora', serif;
+      font-size: 21px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+    header p {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+
+    /* ── WEEK NAVIGATION ── */
+    .week-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 20px;
+      background: var(--green);
+    }
+    .week-nav button {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+    }
+    .week-nav button:active { background: rgba(255,255,255,0.3); }
+    .week-label {
+      flex: 1;
+      text-align: center;
+      color: #fff;
+      font-size: 13px;
+      opacity: 0.85;
+    }
+
+    /* ── DAY TABS ── */
+    .day-tabs {
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 10px 16px 14px;
+      gap: 8px;
+      background: var(--green);
+    }
+    .day-tabs::-webkit-scrollbar { display: none; }
+    .day-tab {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+      background: rgba(255,255,255,0.1);
+      min-width: 52px;
+      min-height: 60px;
+      justify-content: center;
+    }
+    .day-tab.active { background: #fff; }
+    .day-tab .day-abbr {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: rgba(255,255,255,0.75);
+    }
+    .day-tab.active .day-abbr { color: var(--green); }
+    .day-tab .day-num {
+      font-size: 18px;
+      font-weight: 500;
+      color: #fff;
+      margin-top: 2px;
+    }
+    .day-tab.active .day-num { color: var(--green); font-weight: 600; }
+    .day-tab .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      margin-top: 5px;
+    }
+    .day-tab.active .dot { background: var(--green); }
+    .day-tab.has-data .dot { background: rgba(255,255,255,0.9); }
+    .day-tab.active.has-data .dot { background: var(--green); }
+
+    /* ── CONTENT ── */
+    .content {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* ── MEAL CARD ── */
+    .meal-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .meal-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px 10px;
+    }
+    .meal-icon {
+      font-size: 22px;
+      line-height: 1;
+    }
+    .meal-title {
+      font-family: 'Lora', serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      flex: 1;
+    }
+    .meal-time {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .meal-body {
+      padding: 0 16px 14px;
+    }
+    .meal-items {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+      min-height: 0;
+    }
+    .meal-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+    }
+    .meal-item span { flex: 1; }
+    .meal-item button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 20px;
+      /* Large tap target for Android */
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: -8px -8px -8px 0;
+      border-radius: 8px;
+      -webkit-tap-highlight-color: transparent;
+      opacity: 0.5;
+      transition: opacity 0.15s;
+    }
+    .meal-item button:active { opacity: 1; background: rgba(0,0,0,0.05); }
+
+    .add-row {
+      display: flex;
+      gap: 8px;
+    }
+    .add-input {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      /* 16px prevents auto-zoom on Android/iOS */
+      font-size: 16px;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+      /* Ensure minimum tap height */
+      min-height: 48px;
+    }
+    .add-input:focus { border-color: var(--green); }
+    .add-input::placeholder { color: var(--muted); }
+    .add-btn {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      /* Large enough to tap comfortably */
+      width: 48px;
+      min-height: 48px;
+      flex-shrink: 0;
+      font-size: 24px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .add-btn:active { background: var(--green-mid); }
+
+    /* ── NOTES CARD ── */
+    .notes-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .notes-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .notes-input {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      resize: none;
+      min-height: 70px;
+      transition: border-color 0.15s;
+    }
+    .notes-input:focus { border-color: var(--green); }
+
+    /* ── EMPTY STATE ── */
+    .empty-hint {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 4px 0 6px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="sticky-top">
+    <header>
+      <h1>🥦 Ernährungsplan</h1>
+      <p id="header-date"></p>
+    </header>
+    <div class="week-nav">
+      <button id="prev-week">‹</button>
+      <span class="week-label" id="week-label"></span>
+      <button id="next-week">›</button>
+    </div>
+    <div class="day-tabs" id="day-tabs"></div>
+  </div>
+
+  <div class="content" id="content"></div>
+</div>
+
+<script>
+// ── DATA ──
+const STORAGE_KEY = 'ernaehrungsplan_v1';
+const MEALS = [
+  { id: 'breakfast', label: 'Frühstück', icon: '🌅', time: '7–9 Uhr' },
+  { id: 'lunch',     label: 'Mittagessen', icon: '☀️', time: '12–14 Uhr' },
+  { id: 'snack',     label: 'Snack', icon: '🍎', time: '15–16 Uhr' },
+  { id: 'dinner',    label: 'Abendessen', icon: '🌙', time: '18–20 Uhr' },
+];
+const DAYS_SHORT = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+
+let data = {};
+let weekOffset = 0;
+let selectedDay = null;
+
+function load() {
+  try { data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { data = {}; }
+}
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+// ── WEEK HELPERS ──
+function getMondayOf(date) {
+  const d = new Date(date);
+  const day = d.getDay(); // 0=Sun
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+function dateKey(date) {
+  return date.toISOString().slice(0, 10);
+}
+function formatWeekLabel(monday) {
+  const sunday = addDays(monday, 6);
+  const fmt = d => `${d.getDate()}.${d.getMonth()+1}.`;
+  return `${fmt(monday)} – ${fmt(sunday)}${sunday.getFullYear()}`;
+}
+
+// ── RENDER ──
+function getWeekDays() {
+  const base = getMondayOf(new Date());
+  const monday = addDays(base, weekOffset * 7);
+  return Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+}
+
+function getDayHasData(key) {
+  const d = data[key];
+  if (!d) return false;
+  for (const m of MEALS) {
+    if (d[m.id] && d[m.id].items && d[m.id].items.length > 0) return true;
+  }
+  return false;
+}
+
+function renderTabs() {
+  const days = getWeekDays();
+  const tabs = document.getElementById('day-tabs');
+  tabs.innerHTML = '';
+
+  const todayKey = dateKey(new Date());
+
+  days.forEach((day, i) => {
+    const key = dateKey(day);
+    const tab = document.createElement('div');
+    tab.className = 'day-tab' +
+      (key === selectedDay ? ' active' : '') +
+      (getDayHasData(key) ? ' has-data' : '');
+    tab.innerHTML = `
+      <span class="day-abbr">${DAYS_SHORT[day.getDay()]}</span>
+      <span class="day-num">${day.getDate()}</span>
+      <span class="dot"></span>
+    `;
+    tab.addEventListener('click', () => {
+      selectedDay = key;
+      renderTabs();
+      renderContent();
+    });
+    // Highlight today
+    if (key === todayKey) tab.style.setProperty('--ring', '1px solid rgba(255,255,255,0.4)');
+    tabs.appendChild(tab);
+  });
+
+  // Scroll selected tab into view
+  const active = tabs.querySelector('.active');
+  if (active) active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+  // Update week label
+  document.getElementById('week-label').textContent = formatWeekLabel(days[0]);
+}
+
+function getOrCreate(dayKey, mealId) {
+  if (!data[dayKey]) data[dayKey] = {};
+  if (!data[dayKey][mealId]) data[dayKey][mealId] = { items: [] };
+  return data[dayKey][mealId];
+}
+
+function renderContent() {
+  const content = document.getElementById('content');
+  content.innerHTML = '';
+
+  if (!selectedDay) {
+    content.innerHTML = '<div class="empty-hint" style="padding:40px 0">Wähle einen Tag</div>';
+    return;
+  }
+
+  MEALS.forEach(meal => {
+    const mealData = getOrCreate(selectedDay, meal.id);
+
+    const card = document.createElement('div');
+    card.className = 'meal-card';
+
+    const itemsHtml = mealData.items.map((item, idx) => `
+      <div class="meal-item">
+        <span>${escHtml(item)}</span>
+        <button data-meal="${meal.id}" data-idx="${idx}" aria-label="Löschen">×</button>
+      </div>
+    `).join('');
+
+    card.innerHTML = `
+      <div class="meal-header">
+        <span class="meal-icon">${meal.icon}</span>
+        <span class="meal-title">${meal.label}</span>
+        <span class="meal-time">${meal.time}</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-items" id="items-${meal.id}">
+          ${itemsHtml || '<div class="empty-hint">Noch nichts eingetragen</div>'}
+        </div>
+        <div class="add-row">
+          <input class="add-input" id="input-${meal.id}" type="text" placeholder="Gericht hinzufügen…" maxlength="120" />
+          <button class="add-btn" data-meal="${meal.id}" aria-label="Hinzufügen">+</button>
+        </div>
+      </div>
+    `;
+    content.appendChild(card);
+  });
+
+  // Notes
+  const notesCard = document.createElement('div');
+  notesCard.className = 'notes-card';
+  const notesVal = (data[selectedDay] && data[selectedDay]._notes) || '';
+  notesCard.innerHTML = `
+    <div class="notes-label">Notizen</div>
+    <textarea class="notes-input" id="notes-area" placeholder="Einkaufsliste, Kalorien, Pläne…">${escHtml(notesVal)}</textarea>
+  `;
+  content.appendChild(notesCard);
+
+  // Events: delete items
+  content.querySelectorAll('.meal-item button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mealId = btn.dataset.meal;
+      const idx = parseInt(btn.dataset.idx);
+      getOrCreate(selectedDay, mealId).items.splice(idx, 1);
+      save();
+      renderContent();
+      renderTabs();
+    });
+  });
+
+  // Events: add items
+  content.querySelectorAll('.add-btn').forEach(btn => {
+    btn.addEventListener('click', () => addItem(btn.dataset.meal));
+  });
+  MEALS.forEach(meal => {
+    const input = document.getElementById(`input-${meal.id}`);
+    if (input) {
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') addItem(meal.id);
+      });
+    }
+  });
+
+  // Notes
+  const notesArea = document.getElementById('notes-area');
+  if (notesArea) {
+    notesArea.addEventListener('input', () => {
+      if (!data[selectedDay]) data[selectedDay] = {};
+      data[selectedDay]._notes = notesArea.value;
+      save();
+    });
+  }
+}
+
+function addItem(mealId) {
+  const input = document.getElementById(`input-${mealId}`);
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) return;
+  getOrCreate(selectedDay, mealId).items.push(val);
+  save();
+  renderContent();
+  renderTabs();
+  // Re-focus input
+  const newInput = document.getElementById(`input-${mealId}`);
+  if (newInput) newInput.focus();
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── HEADER DATE ──
+function updateHeaderDate() {
+  const now = new Date();
+  const options = { weekday: 'long', day: 'numeric', month: 'long' };
+  document.getElementById('header-date').textContent = now.toLocaleDateString('de-DE', options);
+}
+
+// ── APPLE ICON (Canvas) ──
+function generateAppleIcon() {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 180; canvas.height = 180;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#3d6b50';
+    ctx.beginPath();
+    const r = 36;
+    ctx.moveTo(r, 0);
+    ctx.lineTo(180-r, 0);
+    ctx.arcTo(180, 0, 180, r, r);
+    ctx.lineTo(180, 180-r);
+    ctx.arcTo(180, 180, 180-r, 180, r);
+    ctx.lineTo(r, 180);
+    ctx.arcTo(0, 180, 0, 180-r, r);
+    ctx.lineTo(0, r);
+    ctx.arcTo(0, 0, r, 0, r);
+    ctx.closePath();
+    ctx.fill();
+    ctx.font = '100px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🥦', 90, 95);
+    document.getElementById('apple-icon').href = canvas.toDataURL('image/png');
+  } catch(e) {}
+}
+
+// ── INIT ──
+load();
+updateHeaderDate();
+generateAppleIcon();
+
+const todayKey = dateKey(new Date());
+selectedDay = todayKey;
+
+// Week navigation
+document.getElementById('prev-week').addEventListener('click', () => {
+  weekOffset--;
+  renderTabs();
+  renderContent();
+});
+document.getElementById('next-week').addEventListener('click', () => {
+  weekOffset++;
+  renderTabs();
+  renderContent();
+});
+
+renderTabs();
+renderContent();
+
+// Scroll today into view on load
+setTimeout(() => {
+  const active = document.querySelector('.day-tab.active');
+  if (active) active.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'center' });
+}, 50);
+</script>
+</body>
+</html>
